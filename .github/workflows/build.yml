@@ -1,10 +1,7 @@
-name: Build WindowsCleaner with MSBuild
+name: Build and Release WindowsCleaner
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
     branches:
       - main
 
@@ -14,10 +11,10 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
-    - name: Setup MSBuild (Visual Studio 2022)
-      uses: microsoft/setup-msbuild@v1
+    - name: Set up Visual Studio with MSBuild
+      uses: microsoft/setup-msbuild@v1.1
       with:
         vs-version: '2022'
 
@@ -25,8 +22,7 @@ jobs:
       run: nuget restore WindowsCleaner.sln
 
     - name: Build WindowsCleaner with MSBuild
-      run: |
-        msbuild WindowsCleaner.sln /p:Configuration=Release /p:Platform=x64
+      run: msbuild WindowsCleaner.sln /p:Configuration=Release /p:Platform=x64
 
     - name: Publish Build Artifacts
       run: |
@@ -34,7 +30,28 @@ jobs:
         msbuild WindowsCleaner.sln /p:Configuration=Release /p:Platform=x64 /p:OutputPath=./publish
 
     - name: Upload Build Artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         name: WindowsCleaner-artifact
         path: ./publish/
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Download Build Artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: WindowsCleaner-artifact
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ./publish/**
+
+    - name: Clean up
+      run: rm -rf ./publish
