@@ -7,27 +7,19 @@ on:
 
 jobs:
   build:
-    runs-on: windows-2022  # Change to windows-2022 for Visual Studio 2022
-
+    runs-on: windows-2022
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
-    - name: Setup MSBuild (Visual Studio 2022)
-      uses: microsoft/setup-msbuild@v1
-      with:
-        vs-version: '2022'
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
 
-    - name: Restore NuGet packages (if any)
+    - name: Restore NuGet packages
       run: nuget restore WindowsCleaner.sln
 
-    - name: Build WindowsCleaner with MSBuild
-      run: msbuild WindowsCleaner.sln /p:Configuration=Release /p:Platform=x64
-
-    - name: Publish Build Artifacts
-      run: |
-        mkdir publish
-        msbuild WindowsCleaner.sln /p:Configuration=Release /p:Platform=x64 /p:OutputPath=./publish
+    - name: Build WindowsCleaner
+      run: msbuild WindowsCleaner.sln /p:Configuration=Release /p:Platform=x64 /p:OutputPath=./publish
 
     - name: Upload Build Artifacts
       uses: actions/upload-artifact@v4
@@ -38,30 +30,28 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Create a version tag
       id: create_tag
       run: |
         VERSION="v1.0.${{ github.run_number }}"
-        echo "Creating release tag ${VERSION}"
         git tag $VERSION
         git push origin $VERSION
-        echo "::set-output name=tag::${VERSION}"
+        echo "tag=${VERSION}" >> $GITHUB_OUTPUT
 
     - name: Download Build Artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         name: WindowsCleaner-artifact
+        path: ./publish
 
     - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ steps.create_tag.outputs.tag }}
         files: ./publish/**
-
-    - name: Clean up
-      run: rm -rf ./publish
