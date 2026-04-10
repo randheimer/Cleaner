@@ -11,10 +11,10 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v2
 
-    - name: Set up Visual Studio with MSBuild
-      uses: microsoft/setup-msbuild@v1.1
+    - name: Setup MSBuild (Visual Studio 2022)
+      uses: microsoft/setup-msbuild@v1
       with:
         vs-version: '2022'
 
@@ -41,7 +41,16 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v2
+
+    - name: Create a version tag
+      id: create_tag
+      run: |
+        VERSION="v1.0.${{ github.run_number }}"
+        echo "Creating release tag ${VERSION}"
+        git tag $VERSION
+        git push origin $VERSION
+        echo "::set-output name=tag::${VERSION}"
 
     - name: Download Build Artifacts
       uses: actions/download-artifact@v2
@@ -51,6 +60,7 @@ jobs:
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
+        tag_name: ${{ steps.create_tag.outputs.tag }}
         files: ./publish/**
 
     - name: Clean up
