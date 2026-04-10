@@ -9,23 +9,28 @@ jobs:
   build:
     runs-on: windows-2022
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v2
+    - uses: microsoft/setup-msbuild@v2
 
     - name: Restore NuGet packages
       run: nuget restore WindowsCleaner.sln
 
-    - name: Build WindowsCleaner
-      run: msbuild WindowsCleaner.sln /p:Configuration=Release /p:Platform=x64 /p:OutputPath=./publish
+    - name: Build
+      run: msbuild WindowsCleaner.sln /p:Configuration=Release /p:Platform=x64
 
-    - name: Upload Build Artifacts
+    - name: Collect build output
+      run: |
+        mkdir publish
+        Get-ChildItem -Path . -Recurse -Include *.exe,*.dll | Where-Object { $_.FullName -like "*Release*" } | Copy-Item -Destination publish
+      shell: pwsh
+
+    - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: WindowsCleaner-artifact
         path: ./publish/
+        if-no-files-found: error
 
   release:
     needs: build
@@ -33,10 +38,9 @@ jobs:
     permissions:
       contents: write
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-    - name: Create a version tag
+    - name: Create version tag
       id: create_tag
       run: |
         VERSION="v1.0.${{ github.run_number }}"
@@ -44,11 +48,12 @@ jobs:
         git push origin $VERSION
         echo "tag=${VERSION}" >> $GITHUB_OUTPUT
 
-    - name: Download Build Artifacts
+    - name: Download artifact
       uses: actions/download-artifact@v4
       with:
         name: WindowsCleaner-artifact
         path: ./publish
+        run-id: ${{ github.run_id }}
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
