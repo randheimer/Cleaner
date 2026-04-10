@@ -3,7 +3,7 @@ name: Build WindowsCleaner with MSBuild
 on:
   push:
     branches:
-      - main 
+      - main  
   pull_request:
     branches:
       - main
@@ -19,7 +19,7 @@ jobs:
     - name: Setup MSBuild (Visual Studio 2022)
       uses: microsoft/setup-msbuild@v1
       with:
-        vs-version: '2022'
+        vs-version: '2022' 
 
     - name: Restore NuGet packages (if any)
       run: nuget restore WindowsCleaner.sln
@@ -35,7 +35,7 @@ jobs:
         msbuild WindowsCleaner.sln /p:Configuration=Release /p:Platform=x64 /p:OutputPath=./publish
 
     - name: Upload Build Artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: WindowsCleaner-artifact
         path: ./publish/
