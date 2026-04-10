@@ -25,6 +25,7 @@ public:
     const std::vector<std::wstring>& GetDetectedApps() const { return detectedApps; }
     
     void GenerateReport(const std::wstring& reportPath);
+    void SaveStatsToDatabase();
 
 private:
     CleanStats stats;

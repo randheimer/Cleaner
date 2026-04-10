@@ -2,9 +2,11 @@
 #include <windows.h>
 #include <string>
 #include <filesystem>
+#include <iomanip>
 #include "../include/Logger.h"
 #include "../include/Cleaner.h"
 #include "../include/FileUtils.h"
+#include "../include/StatsDatabase.h"
 
 namespace fs = std::filesystem;
 
@@ -50,8 +52,9 @@ void PrintMenu() {
     std::wcout << L"| OPTIONS:                                                   |\n";
     std::wcout << L"| [1] Scan for cleanable items                               |\n";
     std::wcout << L"| [2] Clean all detected items                               |\n";
-    std::wcout << L"| [3] View statistics                                        |\n";
-    std::wcout << L"| [4] Exit                                                   |\n";
+    std::wcout << L"| [3] View current session statistics                        |\n";
+    std::wcout << L"| [4] View historical statistics                             |\n";
+    std::wcout << L"| [5] Exit                                                   |\n";
     std::wcout << L"+------------------------------------------------------------+\n";
     std::wcout << L"\n";
 }
@@ -59,7 +62,7 @@ void PrintMenu() {
 void PrintStats(const WindowsCleaner::CleanStats& stats) {
     std::wcout << L"\n";
     std::wcout << L"+============================================================+\n";
-    std::wcout << L"|                    CLEANING STATISTICS                     |\n";
+    std::wcout << L"|                CURRENT SESSION STATISTICS                  |\n";
     std::wcout << L"+============================================================+\n";
     std::wcout << L"\n";
     std::wcout << L"+------------------------------------------------------------+\n";
@@ -69,6 +72,63 @@ void PrintStats(const WindowsCleaner::CleanStats& stats) {
     std::wcout << L"| Errors:             " << stats.errors << L"\n";
     std::wcout << L"| Warnings:           " << stats.warnings << L"\n";
     std::wcout << L"+------------------------------------------------------------+\n";
+    std::wcout << L"\n";
+}
+
+void PrintAggregatedStats(const WindowsCleaner::AggregatedStats& stats, const std::wstring& title) {
+    std::wcout << L"+------------------------------------------------------------+\n";
+    std::wcout << L"| " << title;
+    int padding = 58 - static_cast<int>(title.length());
+    for (int i = 0; i < padding; i++) std::wcout << L" ";
+    std::wcout << L"|\n";
+    std::wcout << L"+------------------------------------------------------------+\n";
+    std::wcout << L"| Sessions:           " << stats.sessionCount << L"\n";
+    std::wcout << L"| Total Space Freed:  " << (stats.totalBytesFreed / 1048576) << L" MB\n";
+    std::wcout << L"| Total Files:        " << stats.totalFilesDeleted << L"\n";
+    std::wcout << L"| Total Folders:      " << stats.totalFoldersDeleted << L"\n";
+    std::wcout << L"| Total Errors:       " << stats.totalErrors << L"\n";
+    std::wcout << L"| Total Warnings:     " << stats.totalWarnings << L"\n";
+    std::wcout << L"+------------------------------------------------------------+\n";
+    std::wcout << L"\n";
+}
+
+void PrintHistoricalStats() {
+    std::wcout << L"\n";
+    std::wcout << L"+============================================================+\n";
+    std::wcout << L"|                  HISTORICAL STATISTICS                     |\n";
+    std::wcout << L"+============================================================+\n";
+    std::wcout << L"\n";
+    
+    auto stats24h = WindowsCleaner::StatsDatabase::GetInstance().GetStats24Hours();
+    auto stats7d = WindowsCleaner::StatsDatabase::GetInstance().GetStats7Days();
+    auto stats31d = WindowsCleaner::StatsDatabase::GetInstance().GetStats31Days();
+    auto statsAll = WindowsCleaner::StatsDatabase::GetInstance().GetStatsOverall();
+    
+    PrintAggregatedStats(stats24h, L"LAST 24 HOURS");
+    PrintAggregatedStats(stats7d, L"LAST 7 DAYS");
+    PrintAggregatedStats(stats31d, L"LAST 31 DAYS");
+    PrintAggregatedStats(statsAll, L"ALL TIME");
+    
+    // Show recent sessions
+    auto recentSessions = WindowsCleaner::StatsDatabase::GetInstance().GetRecentSessions(5);
+    if (!recentSessions.empty()) {
+        std::wcout << L"+------------------------------------------------------------+\n";
+        std::wcout << L"|                    RECENT SESSIONS                         |\n";
+        std::wcout << L"+------------------------------------------------------------+\n";
+        
+        for (const auto& session : recentSessions) {
+            tm timeInfo;
+            localtime_s(&timeInfo, &session.timestamp);
+            wchar_t timeStr[64];
+            wcsftime(timeStr, 64, L"%Y-%m-%d %H:%M:%S", &timeInfo);
+            
+            std::wcout << L"| " << timeStr << L" - " 
+                      << (session.bytesFreed / 1048576) << L" MB freed";
+            std::wcout << L"\n";
+        }
+        std::wcout << L"+------------------------------------------------------------+\n";
+    }
+    
     std::wcout << L"\n";
 }
 
@@ -127,8 +187,10 @@ int main() {
     
     std::wstring logFile = logDir + L"\\clean_" + timestamp + L".log";
     std::wstring reportFile = logDir + L"\\report_" + timestamp + L".json";
+    std::wstring statsDbFile = logDir + L"\\stats.db";
     
     WindowsCleaner::Logger::GetInstance().Initialize(logFile);
+    WindowsCleaner::StatsDatabase::GetInstance().Initialize(statsDbFile);
     
     // Check admin privileges
     if (!CheckAdminPrivileges()) {
@@ -182,8 +244,10 @@ int main() {
                     std::wcout << L"\n";
                     cleaner.CleanAll();
                     cleaner.GenerateReport(reportFile);
+                    cleaner.SaveStatsToDatabase();
                     PrintStats(cleaner.GetStats());
-                    std::wcout << L"Report saved to: " << reportFile << L"\n\n";
+                    std::wcout << L"Report saved to: " << reportFile << L"\n";
+                    std::wcout << L"Stats saved to database\n\n";
                 } else {
                     WindowsCleaner::Logger::GetInstance().LogToConsole(
                         WindowsCleaner::LogLevel::INFO, L"Cleaning cancelled by user");
@@ -202,6 +266,14 @@ int main() {
             }
             
             case 4: {
+                system("cls");
+                PrintHeader();
+                PrintHistoricalStats();
+                system("pause");
+                break;
+            }
+            
+            case 5: {
                 WindowsCleaner::Logger::GetInstance().LogToConsole(
                     WindowsCleaner::LogLevel::INFO, L"Application closed by user");
                 running = false;

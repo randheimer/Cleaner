@@ -91,12 +91,14 @@
     <ClCompile Include="src\CleanerConfig.cpp" />
     <ClCompile Include="src\FileUtils.cpp" />
     <ClCompile Include="src\Logger.cpp" />
+    <ClCompile Include="src\StatsDatabase.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Cleaner.h" />
     <ClInclude Include="include\FileUtils.h" />
     <ClInclude Include="include\Logger.h" />
     <ClInclude Include="include\CleanerConfig.h" />
+    <ClInclude Include="include\StatsDatabase.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

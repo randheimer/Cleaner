@@ -2,6 +2,7 @@
 #include "../include/CleanerConfig.h"
 #include "../include/Logger.h"
 #include "../include/FileUtils.h"
+#include "../include/StatsDatabase.h"
 #include <windows.h>
 #include <shlobj.h>
 #include <iostream>
@@ -300,6 +301,19 @@ bool Cleaner::DetectAnticheatTracking(const std::wstring& kvsPath, std::wstring&
     }
     
     return false;
+}
+
+void Cleaner::SaveStatsToDatabase() {
+    CleaningSession session;
+    session.timestamp = time(nullptr);
+    session.bytesFreed = stats.bytesFreed;
+    session.filesDeleted = stats.filesDeleted;
+    session.foldersDeleted = stats.foldersDeleted;
+    session.errors = stats.errors;
+    session.warnings = stats.warnings;
+    
+    StatsDatabase::GetInstance().SaveSession(session);
+    Logger::GetInstance().Log(LogLevel::INFO, L"Cleaning session saved to database");
 }
 
 } // namespace WindowsCleaner
