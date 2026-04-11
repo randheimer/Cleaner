@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\console">
+      <UniqueIdentifier>{8a1b2c3d-4e5f-6789-0abc-def123456789}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\filesystem">
+      <UniqueIdentifier>{9b2c3d4e-5f67-8901-bcde-f12345678901}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\logging">
+      <UniqueIdentifier>{ac3d4e5f-6789-0123-cdef-123456789012}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\scanning">
+      <UniqueIdentifier>{bd4e5f67-8901-2345-def1-234567890123}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\statistics">
+      <UniqueIdentifier>{ce5f6789-0123-4567-ef12-345678901234}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\console">
+      <UniqueIdentifier>{1a2b3c4d-5e6f-7890-abcd-ef1234567890}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\filesystem">
+      <UniqueIdentifier>{df678901-2345-6789-f123-456789012345}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\logging">
+      <UniqueIdentifier>{e0789012-3456-789a-0234-567890123456}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\scanning">
+      <UniqueIdentifier>{f189a012-4567-89ab-1345-678901234567}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\statistics">
+      <UniqueIdentifier>{02a0b123-5678-9abc-2456-789012345678}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\console\main.cpp">
+      <Filter>src\console</Filter>
+    </ClCompile>
+    <ClCompile Include="src\filesystem\FileOperations.cpp">
+      <Filter>src\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\logging\ActivityLog.cpp">
+      <Filter>src\logging</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scanning\CleanTargets.cpp">
+      <Filter>src\scanning</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scanning\ScanEngine.cpp">
+      <Filter>src\scanning</Filter>
+    </ClCompile>
+    <ClCompile Include="src\statistics\CleaningHistory.cpp">
+      <Filter>src\statistics</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\filesystem\FileOperations.h">
+      <Filter>include\filesystem</Filter>
+    </ClInclude>
+    <ClInclude Include="include\logging\ActivityLog.h">
+      <Filter>include\logging</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scanning\CleanTargets.h">
+      <Filter>include\scanning</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scanning\ScanEngine.h">
+      <Filter>include\scanning</Filter>
+    </ClInclude>
+    <ClInclude Include="include\statistics\CleaningHistory.h">
+      <Filter>include\statistics</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
